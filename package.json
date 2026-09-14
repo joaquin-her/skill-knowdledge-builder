@@ -1,0 +1,26 @@
+{
+  "name": "mode-quizz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Práctica autoevaluable multi-unidad para materias de ingeniería",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve out",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "katex": "0.16.11",
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/katex": "0.16.7",
+    "@types/node": "22.10.5",
+    "@types/react": "19.0.7",
+    "@types/react-dom": "19.0.3",
+    "typescript": "5.7.3"
+  }
+}

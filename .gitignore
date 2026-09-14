@@ -8,6 +8,9 @@ desktop.ini
 .idea/
 *.swp
 
-# Dependencias / builds (el proyecto no usa ninguna, pero por las dudas)
+# Dependencias y build
 node_modules/
-dist/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo

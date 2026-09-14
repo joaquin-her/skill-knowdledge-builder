@@ -6,18 +6,39 @@ instante como correcto o incorrecto, con el desarrollo completo desplegable.
 
 La unidad incluida es la **Guía 1 — Errores** de 95.13 Métodos Matemáticos y
 Numéricos (Facultad de Ingeniería, UBA). El motor está separado del contenido:
-agregar la guía de otra materia es escribir un archivo y sumar una línea al
-index.
+agregar la guía de otra materia es escribir un archivo y registrarlo.
+
+Construido con Next.js y publicado como sitio estático.
 
 ## Cómo usarlo
 
-Abrí `index.html` en el navegador. No hay build, ni servidor, ni dependencias
-que instalar: doble clic al archivo alcanza, y funciona sin conexión.
+El sitio es estático: se compila una vez y se sirve como HTML. En desarrollo,
 
-Si hay más de una unidad cargada, aparece un selector en la barra superior con
-el avance de cada una (`Métodos Numéricos · Guía 1 — 7/26`). El avance de cada
-unidad se conserva al cambiar de una a otra, y **Reiniciar** borra solamente la
-unidad que estás mirando. Con una sola unidad, el selector se oculta.
+```bash
+npm install
+npm run dev          # http://localhost:3000
+```
+
+y para generar el sitio publicable:
+
+```bash
+npm run build        # deja el export estático en out/
+npm start            # sirve out/ para probarlo como en producción
+```
+
+En la portada están las unidades disponibles; cada una tiene su propia URL
+(`/unidad/<id>/`). **El avance se guarda en el navegador**: recargar la página,
+cerrar la pestaña o volver más tarde no pierde lo respondido. Cada unidad guarda
+su progreso por separado, y **Reiniciar** borra solamente la que estás mirando.
+
+## Publicación
+
+El push a `main` dispara `.github/workflows/deploy.yml`, que compila y publica en
+GitHub Pages. El workflow exporta con `NEXT_PUBLIC_BASE_PATH=/<nombre-del-repo>`
+porque Pages sirve los project sites bajo esa ruta; para publicar en un dominio
+propio o en la raíz, basta con no setear esa variable.
+
+Hay que habilitarlo una vez en **Settings → Pages → Source: GitHub Actions**.
 
 ## Contenido
 
@@ -44,86 +65,91 @@ del orden de la cota (el último es «medianamente significativo»).
 ## Estructura
 
 ```
-index.html                             Cáscara, selector de unidad y un <script> por unidad
-css/styles.css                         Estilos, temas claro/oscuro, tipografías del sistema
-js/engine.js                           Motor reutilizable: render, KaTeX, corrección y puntaje
-js/units/metodos-numericos-guia-1.js   Contenido de la Guía 1
-js/units/_plantilla.js                 Molde para copiar al dar de alta una unidad
-js/app.js                              Arranque: sólo llama a QUIZ.init({...})
-vendor/katex/                          KaTeX 0.16.11 (MIT) para renderizar las fórmulas offline
+app/page.tsx                           Landing: portada y grilla de unidades
+app/unidad/[id]/                       Una página por unidad (export estático)
+src/components/                        Motor: render, corrección y puntaje      ← no hace falta tocarlo
+src/lib/progress.ts                    Persistencia del progreso en localStorage
+src/lib/useProgreso.ts                 Hook que expone el progreso de una unidad
+src/lib/avance.ts                      Cálculo de respondidas/correctas/total
+src/lib/tex.ts                         KaTeX: `M` (String.raw), `tex`, `inline`
+src/types/quiz.ts                      Contrato de contenido: qué es una Unidad
+src/data/units/<slug>.ts               Contenido de cada unidad                 ← lo único que se escribe
+src/data/units/_plantilla.ts           Molde para copiar al dar de alta una unidad
+src/data/units/index.ts                Registro de unidades (orden del selector)
+src/styles/styles.css                  Estilos, temas claro/oscuro
+public/vendor/katex/                   KaTeX 0.16.11 (MIT), para renderizar offline
 ```
 
-El motor expone un único global, `window.QUIZ`, con `M` (`String.raw`), `units`,
-`registerUnit(unidad)` e `init(config)`. Los ids de cada pregunta se namespacean
-con el id de la unidad (`metodos-numericos-guia-1__q4a1`), así dos guías pueden
-numerar sus preguntas igual sin pisarse.
+`src/types/quiz.ts` es la frontera entre el motor y el contenido: una unidad
+nueva sólo tiene que satisfacer el tipo `Unidad`, y los errores de forma los
+atrapa el compilador en vez de aparecer en runtime. Los ids de cada pregunta se
+namespacean con el id de la unidad (`metodos-numericos-guia-1__q4a1`), así dos
+guías pueden numerar sus preguntas igual sin pisarse.
 
 ## Agregar una unidad nueva
 
 Son tres pasos, y el motor no se toca:
 
-1. **Copiá** `js/units/_plantilla.js` a `js/units/<materia>-<guia>.js`.
-2. **Cambiale el `id`** (tiene que ser único; es el namespace de la unidad), los
-   datos de cabecera —`codigo`, `materia`, `unidad`, `facultad`— y reemplazá
-   `problemas` por el contenido real.
-3. **Sumá su `<script>`** en el bloque `UNIDADES` de `index.html`. El orden de
-   esas líneas es el orden del selector.
+1. **Copiá** `src/data/units/_plantilla.ts` a `src/data/units/<materia>-<guia>.ts`.
+2. **Cambiale el `id`** (tiene que ser único; es el namespace de la unidad y el
+   slug de su URL), los datos de cabecera —`codigo`, `materia`, `unidad`,
+   `facultad`— y reemplazá `problemas` por el contenido real.
+3. **Registrala** en `src/data/units/index.ts`. El orden del array es el orden
+   del selector y de la portada.
 
-```html
-<!-- UNIDADES -->
-<script src="js/units/metodos-numericos-guia-1.js"></script>
-<script src="js/units/analisis-2-guia-3.js"></script>
+```ts
+// src/data/units/index.ts
+import { unidad as metodosNumericosGuia1 } from './metodos-numericos-guia-1';
+import { unidad as analisis2Guia3 } from './analisis-2-guia-3';
+
+export const UNIDADES: Unidad[] = [metodosNumericosGuia1, analisis2Guia3];
 ```
 
-La unidad se registra sola:
+Y el archivo de contenido:
 
-```js
-(function () {
-  'use strict';
-  var M = QUIZ.M;
+```ts
+import type { Unidad } from '@/types/quiz';
+import { M } from '@/lib/tex';
 
-  QUIZ.registerUnit({
-    id: 'analisis-2-guia-3',
-    codigo: '61.03',
-    materia: 'Análisis Matemático II',
-    unidad: 'Guía 3 — Integrales',
-    facultad: 'Facultad de Ingeniería — UBA',
-    problemas: [
-      {
-        id: 'p1',
-        titulo: 'Título del problema',
-        enunciado: [
-          { p: 'Texto con HTML y $\\LaTeX$ en línea.' },
-          { math: M`\int_0^1 f(x)\,dx` },
-          { ul: ['$x = 1 \\pm 0{,}1$'] },
-          { table: { head: ['a', 'b'], rows: [['1', '2']] } },
-          { note: 'Aclaración destacada.' }
-        ],
-        preguntas: [
-          {
-            id: 'q1_1', tag: '1.a', tipo: 'mc', correcta: 'A',
-            enunciado: '¿Cuál es la expresión correcta?',
-            opciones: [{ v: 'A', tex: M`x^2` }, { v: 'B', tex: M`x^3` }],
-            desarrollo: [{ p: 'Por qué.' }]
-          },
-          {
-            id: 'q1_2', tag: '1.b', tipo: 'num', respuesta: 3.14, tol: 0.01,
-            enunciado: 'Valor de $y$', unidad: 'm', placeholder: '0,00'
-          }
-        ]
-      }
-    ]
-  });
-})();
+export const unidad: Unidad = {
+  id: 'analisis-2-guia-3',
+  codigo: '61.03',
+  materia: 'Análisis Matemático II',
+  unidad: 'Guía 3 — Integrales',
+  facultad: 'Facultad de Ingeniería — UBA',
+  problemas: [
+    {
+      id: 'p1',
+      titulo: 'Título del problema',
+      enunciado: [
+        { p: 'Texto con HTML y $\\LaTeX$ en línea.' },
+        { math: M`\int_0^1 f(x)\,dx` },
+        { ul: ['$x = 1 \\pm 0{,}1$'] },
+        { table: { head: ['a', 'b'], rows: [['1', '2']] } },
+        { note: 'Aclaración destacada.' }
+      ],
+      preguntas: [
+        {
+          id: 'q1_1', tag: '1.a', tipo: 'mc', correcta: 'A',
+          enunciado: '¿Cuál es la expresión correcta?',
+          opciones: [{ v: 'A', tex: M`x^2` }, { v: 'B', tex: M`x^3` }],
+          desarrollo: [{ p: 'Por qué.' }]
+        },
+        {
+          id: 'q1_2', tag: '1.b', tipo: 'num', respuesta: 3.14, tol: 0.01,
+          enunciado: 'Valor de $y$', unidad: 'm', placeholder: '0,00'
+        }
+      ]
+    }
+  ]
+};
 ```
+
+Verificá con `npx tsc --noEmit` antes de dar la unidad por terminada: el tipo
+`Unidad` rechaza en build lo que antes fallaba recién al abrir la página.
 
 ### Detalles que conviene respetar
 
-- **Todo dentro de la IIFE.** Los `<script>` son clásicos y comparten el scope
-  léxico: dos unidades con `M` a nivel global tiran `Identifier 'M' has already
-  been declared`.
-- **Scripts clásicos, nunca `type="module"`.** El index se abre por `file://` con
-  doble clic y los módulos ES no cargan ahí por CORS.
 - **`M` (`String.raw`) para todo el LaTeX**: en un string común `\frac` es un
   salto de página y `\times` un tabulador. Las fórmulas en línea van entre `$…$`
   dentro de cualquier texto.
@@ -132,6 +158,8 @@ La unidad se registra sola:
 - Para las preguntas numéricas, `tol` es tolerancia absoluta y `reltol` es
   relativa (`0.3` = ±30 %, útil cuando la respuesta es del orden de 10⁻⁹). La
   entrada acepta coma o punto decimal y notación científica (`8,3e-9`).
+- Los decimales en LaTeX se escriben `2{,}00`, con coma, siguiendo la
+  convención de la cátedra.
 
 ## Licencia
 
