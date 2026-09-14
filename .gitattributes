@@ -1,0 +1,12 @@
+# Normaliza los finales de línea: el repo guarda LF, el checkout usa lo nativo.
+* text=auto
+
+*.html text
+*.css  text
+*.js   text
+*.md   text
+
+# Binarios: nunca tocar, o las fuentes de KaTeX se corrompen.
+*.woff2 binary
+*.png   binary
+*.pdf   binary
