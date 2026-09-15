@@ -4,9 +4,11 @@ Práctica autoevaluable multi-unidad para materias de ingeniería. Cada ejercici
 se responde por opción múltiple o ingresando el valor calculado, y se corrige al
 instante como correcto o incorrecto, con el desarrollo completo desplegable.
 
-La unidad incluida es la **Guía 1 — Errores** de 95.13 Métodos Matemáticos y
-Numéricos (Facultad de Ingeniería, UBA). El motor está separado del contenido:
-agregar la guía de otra materia es escribir un archivo y registrarlo.
+Las unidades incluidas son la **Guía 1 — Errores**, la **Guía 2 — Ecuaciones No
+Lineales** y la **Guía 3 — Sistemas de Ecuaciones Lineales** de 95.13 Métodos
+Matemáticos y Numéricos (Facultad de Ingeniería, UBA). El motor está separado
+del contenido: agregar la guía de otra materia es escribir un archivo y
+registrarlo.
 
 Construido con Next.js y publicado como sitio estático.
 
@@ -42,6 +44,8 @@ Hay que habilitarlo una vez en **Settings → Pages → Source: GitHub Actions**
 
 ## Contenido
 
+### Guía 1 — Errores
+
 Los 8 problemas de la Guía 1 (26 ejercicios en total) más un ejercicio extra
 resuelto en clase sobre condicionamiento de `ln(x − √(x²−1))`.
 
@@ -61,6 +65,57 @@ Todos los resultados fueron verificados numéricamente, y los criterios de
 redondeo siguen los de la cátedra: una cifra es **correcta** cuando el error no
 supera media unidad de su orden, y el resultado se escribe reteniendo el dígito
 del orden de la cota (el último es «medianamente significativo»).
+
+### Guía 2 — Ecuaciones No Lineales
+
+Los 8 problemas de la Guía 2 (36 ejercicios en total) más dos problemas extra:
+la comparación de los cinco métodos que la cátedra desarrolla en clase, y los
+dos planteos de Física que la guía marca como no evaluables.
+
+| Problema | Tema |
+|---|---|
+| 1 | Bisección: elección del intervalo de arranque y cota de iteraciones |
+| 2 | Bisección sobre `x²/4 − sen(x)`: tolerancia absoluta vs. relativa, orden y λ |
+| 3 | Punto fijo: condiciones de convergencia, orden lineal y constante asintótica |
+| 4 | Newton-Raphson para `x = cos(x)`: intervalo de convergencia y orden cuadrático |
+| 5 | Fórmulas iterativas para `∛c`, `arcsen(a)` y `ln(a)` con aritmética limitada |
+| 6 | Precisión alcanzable cuando `f` y `f'` se conocen con 4 decimales |
+| 7 | Método de la secante: orden supralineal (razón áurea) |
+| 8 | Newton-Raphson sobre `0,5 − e^−x` |
+| ★ | Extra: comparación de los 5 métodos (λ, p y N) |
+| ★ | Extra: electrostática y mecánica, dos modelos que llevan a una ENL |
+
+Las tablas de iteraciones reproducen fila por fila las de la clase del
+08/04/2025 (Ejercicios 2.2 y 2.7), incluida su forma de estimar el orden `p` y
+la constante `λ` a partir de las últimas tres diferencias entre iteraciones.
+
+### Guía 3 — Sistemas de Ecuaciones Lineales
+
+Los 12 problemas de la Guía 3 (62 ejercicios en total) más el ejercicio de
+examen que la cátedra resuelve en la clase de métodos iterativos.
+
+| Problema | Tema |
+|---|---|
+| 1 | Eliminación de Gauss sin pivoteo sobre una Vandermonde 4×4 |
+| 2 | Pivoteo parcial con `t=4`: condicionamiento vs. estabilidad del algoritmo |
+| 3 | Gauss con pivoteo, `LU` de Doolittle y refinamiento con `t=3` |
+| 4 | `LU` dada con vector de permutaciones: resolver y reconstruir `A` |
+| 5 | Refinamiento iterativo y estimación de dígitos significativos (`K`, `p`, `q`) |
+| 6 | Matriz casi singular: pivoteo parcial vs. total y número de condición |
+| 7 | Jacobi y Gauss-Seidel en un 2×2 general: `ρ(T_GS) = ρ(T_J)²` |
+| 8 | Reordenar filas para pasar de `ρ = 354` a `ρ = 0,0028` |
+| 9 | Gauss-Seidel con criterio de parada y cota del error de truncamiento |
+| 10 | Un sistema no singular donde ambos métodos ciclan (`ρ(T) = 1`) |
+| 11 | Matriz rala tridiagonal: la ralitud se conserva al triangular |
+| 12 | Reordenar para garantizar convergencia y precisión de 3 dígitos |
+| ★ | Extra: examen con autovalores complejos de la matriz de iteración |
+
+La notación y los criterios siguen las clases «SEL Directos» y «SEL
+Iterativos»: multiplicadores `m_ik = a_ik / a_kk`, residuo `r = b − A·x̃`
+siempre en doble precisión, condicionamiento experimental
+`K(A) ≈ (‖δx‖/‖x̃‖)·10^t` con `p = log₁₀K` y `q = t − p`, y convergencia
+decidida por el radio espectral de la **matriz de iteración** `T`, no por el
+de `A`.
 
 ## Estructura
 
